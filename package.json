@@ -1,0 +1,13 @@
+{
+  "name": "direct-message",
+  "version": "0.1.0",
+  "description": "A simple skill for sending direct messages to other users",
+  "main": "index.js",
+  "repository": " ",
+  "author": "charles.lobo@gmail.com",
+  "license": "MIT",
+  "dependencies": {
+    "cote": "^0.17.3",
+    "elife-utils": "everlifeai/elife-utils"
+  }
+}
