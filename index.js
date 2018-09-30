@@ -28,9 +28,8 @@ function sendReply(msg, req) {
     })
 }
 
-function sendMsgOnDefaultChannel(msg, req) {
-    req.type = 'reply-on-default-channel'
-    req.msg = msg
+function sendMsgOnLastChannel(req) {
+    req.type = 'reply-on-last-channel'
     commMgrClient.send(req, (err) => {
         if(err) u.showErr(err)
     })
@@ -106,10 +105,23 @@ function startMicroservice() {
     let now = (new Date()).getTime() // TODO: Find better way of getting latest messages
     svc.on('ssb-msg', (req, cb) => {
         cb()
-        if(req.msg.timestamp > now) console.log(req)
+        if(req.msg.timestamp > now) processMsg(req.msg)
     })
 
 }
+
+
+/*      outcome/
+ * If this is a message directed to me, relay it to my owner over the
+ * last used channel
+ */
+function processMsg(msg) {
+    sendMsgOnLastChannel({
+        from: msg.value.author,
+        msg: msg.value.content.txt,
+    })
+}
+
 
 const client = new cote.Requester({
     name: 'Direct-Msg -> SSB',
