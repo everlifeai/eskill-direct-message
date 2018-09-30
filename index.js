@@ -126,14 +126,12 @@ function processMsg(msg) {
     }
 }
 
-
-const client = new cote.Requester({
-    name: 'Direct-Msg -> SSB',
-    key: 'everlife-ssb-svc',
-})
-
+/*      outcome/
+ * Post a 'direct message' to someone on my feed and let the network
+ * replicate it to the recipient
+ */
 function directMessage(req, userID, userMsg, cb) {
-    client.send({
+    ssbClient.send({
         type: 'new-msg',
         msg: {
             type: "direct-msg",
