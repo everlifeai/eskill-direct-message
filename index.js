@@ -2,6 +2,8 @@
 const cote = require('cote')
 const u = require('elife-utils')
 
+let ssbid
+
 /*      understand/
  * This is the main entry point where we start.
  *
@@ -63,8 +65,9 @@ function registerWithSSB() {
         type: 'register-feed-handler',
         mskey: msKey,
         mstype: 'ssb-msg',
-    }, (err) => {
+    }, (err, ssbid_) => {
         if(err) u.showErr(err)
+        else ssbid = ssbid_
     })
 }
 
@@ -82,23 +85,23 @@ function startMicroservice() {
     svc.on('msg', (req, cb) => {
         if(!req.msg) return cb()
 
-        const msg = req.msg.trim()
-        const userID = msg.trim().split(" ")[0]
-        const userMsg = msg.replace(userID,'').trim()
-        console.log(`USER ID : ${userID}`)
-        console.log(`USER MSG : ${userMsg}`)
-        if(userID.startsWith("@") 
-            && userID.endsWith(".ed25519") && userMsg.length>0){
-                directMessage(req,userID,userMsg,(err)=>{
-                    cb(null,true)
-                    if(err) {
-                        sendReply(err,req)    
-                    }else {
-                        sendReply(`Message sent to ${userID}`,req)
-                    }
-                }
-                )
-        } else cb()
+        let msg = req.msg.trim()
+        let p = msg.indexOf(" ")
+        if(p < 1) return cb()
+
+        let userID = msg.substr(0, p)
+        let userMsg = msg.substr(p+1)
+        if(!(userID.startsWith("@") &&
+             userID.endsWith(".ed25519") &&
+             userMsg.length > 0)) return cb()
+
+        directMessage(req, userID, userMsg, (err) => {
+            if(err) cb(err)
+            else {
+                cb(null, true)
+                sendReply(`Message posted for ${userID}`, req)
+            }
+        })
 
     })
 
@@ -116,10 +119,11 @@ function startMicroservice() {
  * last used channel
  */
 function processMsg(msg) {
-    sendMsgOnLastChannel({
-        from: msg.value.author,
-        msg: msg.value.content.txt,
-    })
+    if(msg.value.content.type == 'direct-msg' && msg.value.content.to == ssbid) {
+        sendMsgOnLastChannel({
+            msg: msg.value.author + ' says:\n' + msg.value.content.text,
+        })
+    }
 }
 
 
@@ -128,24 +132,15 @@ const client = new cote.Requester({
     key: 'everlife-ssb-svc',
 })
 
-function directMessage(req, userID,userMsg,cb) {
-    client.send({ type: 'new-pvt-msg', to: userID, msg: { type: "direct-msg", text: userMsg } }, (err) => {
-        if(err) cb(err)
-        else {
-            console.log('posted message');
-            client.send({
-                type: 'dump-msgs',
-                opts: {
-                    showPvt: true,
-                    showCnt: false,
-                    showAth: false,
-                },
-            }, (err, msgs) => {
-                if(err) u.showErr(err)
-                else u.showMsg(msgs)
-            })
-        }
-    })
+function directMessage(req, userID, userMsg, cb) {
+    client.send({
+        type: 'new-msg',
+        msg: {
+            type: "direct-msg",
+            to: userID,
+            text: userMsg
+        },
+    }, cb)
 }
 
 main()
