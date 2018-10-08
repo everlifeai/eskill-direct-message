@@ -105,10 +105,9 @@ function startMicroservice() {
 
     })
 
-    let now = (new Date()).getTime() // TODO: Find better way of getting latest messages
     svc.on('ssb-msg', (req, cb) => {
         cb()
-        if(req.msg.timestamp > now) processMsg(req.msg)
+        processMsg(req.msg)
     })
 
 }
