@@ -1,5 +1,5 @@
 'use strict'
-const cote = require('cote')
+const cote = require('cote')({statusLogsEnabled:false})
 const u = require('elife-utils')
 
 let ssbid
