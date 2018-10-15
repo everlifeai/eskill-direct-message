@@ -2,8 +2,6 @@
 const cote = require('cote')({statusLogsEnabled:false})
 const u = require('elife-utils')
 
-let ssbid
-
 /*      understand/
  * This is the main entry point where we start.
  *
@@ -15,6 +13,7 @@ function main() {
     startMicroservice()
     registerWithCommMgr()
     registerWithSSB()
+    getAvatarID()
 }
 
 const commMgrClient = new cote.Requester({
@@ -65,9 +64,19 @@ function registerWithSSB() {
         type: 'register-feed-handler',
         mskey: msKey,
         mstype: 'ssb-msg',
-    }, (err, ssbid_) => {
+    }, (err) => {
         if(err) u.showErr(err)
-        else ssbid = ssbid_
+    })
+}
+
+/*      outcome/
+ * Get the avatar id
+ */
+let avatarid
+function getAvatarID() {
+    ssbClient.send({ type: 'avatar-id' }, (err, id) => {
+        if(err) u.showErr(err)
+        else avatarid = id
     })
 }
 
@@ -118,7 +127,7 @@ function startMicroservice() {
  * last used channel
  */
 function processMsg(msg) {
-    if(msg.value.content.type == 'direct-msg' && msg.value.content.to == ssbid) {
+    if(msg.value.content.type == 'direct-msg' && msg.value.content.to == avatarid) {
         sendMsgOnLastChannel({
             msg: msg.value.author + ' says:\n' + msg.value.content.text,
         })
