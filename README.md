@@ -3,11 +3,15 @@
 This is a simple skill that is used to directly reach out and message
 the owner of an avatar you know.
 
-It's current motivation is to check that the network is well connected
-and that messages are being replicated correctly.
+Because we leverage the infrastructure of the network and the node, this
+skill can reach the user across multiple channels - "Jack" can use
+**Telegram** to message "Jill" who gets the message on **Alexa** or
+"John" who responds via **XBox** or **Skype**.
 
-## TODO
-If we want this to be developed further we will need:
+![direct-message](direct-message.png)
+
+## Contributions
+Anyone looking to contribute can add the following features:
 
 1. Rate Limiting
 2. Encryption
