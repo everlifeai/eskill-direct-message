@@ -64,6 +64,7 @@ function registerWithSSB() {
         type: 'register-feed-handler',
         mskey: msKey,
         mstype: 'ssb-msg',
+        mshelp: [ { cmd: '/send_msg', txt: 'send a direct message to another avatar' } ],
     }, (err) => {
         if(err) u.showErr(err)
     })
@@ -93,8 +94,12 @@ function startMicroservice() {
 
     svc.on('msg', (req, cb) => {
         if(!req.msg) return cb()
+        let msg = req.msg
+        if(!msg.startsWith('/send_msg ')) return cb()
 
-        let msg = req.msg.trim()
+        msg = msg.substr('/send_msg '.length)
+        msg = msg.trim()
+
         let p = msg.indexOf(" ")
         if(p < 1) return cb()
 
