@@ -46,6 +46,7 @@ function registerWithCommMgr() {
         type: 'register-msg-handler',
         mskey: msKey,
         mstype: 'msg',
+        mshelp: [ { cmd: '/send_msg', txt: 'send a direct message to another avatar' } ],
     }, (err) => {
         if(err) u.showErr(err)
     })
@@ -64,7 +65,6 @@ function registerWithSSB() {
         type: 'register-feed-handler',
         mskey: msKey,
         mstype: 'ssb-msg',
-        mshelp: [ { cmd: '/send_msg', txt: 'send a direct message to another avatar' } ],
     }, (err) => {
         if(err) u.showErr(err)
     })
