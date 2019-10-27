@@ -1,6 +1,6 @@
 {
   "name": "direct-message",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "A simple skill for sending direct messages to other users",
   "main": "index.js",
   "repository": " ",
