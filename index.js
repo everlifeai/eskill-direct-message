@@ -81,6 +81,8 @@ function getAvatarID() {
     })
 }
 
+let directMsgHandlerRegistry = []
+
 function startMicroservice() {
 
     /*      understand/
@@ -124,6 +126,55 @@ function startMicroservice() {
         processMsg(req.msg)
     })
 
+    svc.on('register-direct-msg-handler', (req, cb) => {
+        if(!req.mskey || !req.mstype) cb(`mskey & mstype needed to register feed handler`)
+        else {
+            if(isRegistered(req.mskey)) return cb()
+            let client = new cote.Requester({
+              name: `Direct Msg -> ${req.mskey}`,
+              key: req.mskey,
+            })
+            directMsgHandlerRegistry.push({client: client, mstype: req.mstype})
+            cb()
+        }
+    })
+
+}
+
+function isHandling(skill, msg, cb) {
+    skill.client.send({type: 'direct-msg', msg: msg }, cb)
+}
+
+function isRegistered(mskey) {
+    for (let i=0; i<directMsgHandlerRegistry.length; i++) {
+        if (directMsgHandlerRegistry[i].mskey === mskey) return true
+    }
+    return false
+}
+
+let CURRENT_HANDLER
+
+function handleDirectMsg(msg, cb) {
+    check_handler_ndx_1(0)
+
+    function check_handler_ndx_1(ndx) {
+        if(ndx < directMsgHandlerRegistry.length) {
+            isHandling(directMsgHandlerRegistry[ndx], msg, (err, handling) => {
+                if(err) u.showErr(err)
+                else {
+                    if(handling) {
+                        CURRENT_HANDLER = directMsgHandlerRegistry[ndx]
+                        cb(null, true)
+                    } else check_handler_ndx_1(ndx+1)
+                }
+            })
+        } else {
+            sendMsgOnLastChannel({
+                msg: msg.value.author + ' says:\n' + msg.value.content.text,
+            })
+            cb(null, true)
+        }
+    }
 }
 
 
@@ -133,8 +184,8 @@ function startMicroservice() {
  */
 function processMsg(msg) {
     if(msg.value.content.type == 'direct-msg' && msg.value.content.to == avatarid) {
-        sendMsgOnLastChannel({
-            msg: msg.value.author + ' says:\n' + msg.value.content.text,
+        handleDirectMsg(msg, (err, success) => {
+            if(err) u.showErr(err)
         })
     }
 }
