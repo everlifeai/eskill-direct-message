@@ -36,7 +36,7 @@ function sendMsgOnLastChannel(req) {
     })
 }
 
-let msKey = 'everlife-dir-msg-demo-svc'
+let msKey = 'everlife-dir-msg-svc'
 /*      outcome/
  * Register ourselves as a message handler with the communication
  * manager.
